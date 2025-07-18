@@ -6,11 +6,12 @@ namespace App\Models;
 use App\Models\Message;
 use App\Models\Student;
 use App\Models\Schedule;
-use Illuminate\Notifications\Notifiable;
+use App\Models\ClassModel;
 //use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
@@ -28,6 +29,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'classe_id',
     ];
 
     /**
@@ -72,4 +74,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Message::class, 'receiver_id');
     }
+    public function classe()
+    {
+        return $this->belongsTo(ClassModel::class);
+    }
+
 }

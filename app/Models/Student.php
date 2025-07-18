@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Note;
 use App\Models\User;
 use App\Models\Grade;
+use App\Models\Payment;
 use App\Models\ClassModel;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Model;
@@ -41,4 +42,15 @@ class Student extends Model
     {
         return $this->hasMany(Payment::class);
     }
+    
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function classe()
+{
+    return $this->belongsTo(ClassModel::class);
+}
+
 }

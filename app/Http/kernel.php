@@ -14,15 +14,6 @@ class Kernel extends HttpKernel
      *
      * @var array<int, class-string|string>
      */
-
-     
-    protected function schedule(Schedule $schedule)
-    {
-        // Exemple de tâche planifiée (par exemple, vérifier les enchères terminées)
-        $schedule->call(function () {
-        // Logique pour terminer les enchères expirées
-        })->daily();
-    }
     protected $middleware = [
         // Global middleware
         \App\Http\Middleware\TrustHosts::class,

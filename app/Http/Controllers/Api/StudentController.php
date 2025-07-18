@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\User;
 use App\Models\Student;
 use App\Models\Resource;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ class StudentController extends Controller
         return response()->json(Student::with('class', 'tutor')->get(), 200);
     }
 
-    public function store(Request $request)
+    /*public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string|max:255',
@@ -33,7 +34,46 @@ class StudentController extends Controller
         $student = Student::create($request->all());
         $student->assignRole('student');
         return response()->json($student, 201);
-    }
+    }*/
+
+ public function store(Request $request)
+{
+    $validated = $request->validate([
+        'first_name' => 'required|string|max:255',
+        'last_name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:6',
+        'birth_date' => 'required|date',
+        'classe_id' => 'required|exists:classes,id',
+        'tutor_id' => 'nullable|exists:users,id',
+    ]);
+
+    // Créer le User
+    $user = User::create([
+        'name' => $validated['first_name'].' '.$validated['last_name'],
+        'email' => $validated['email'],
+        'password' => bcrypt($validated['password']),
+        'classe_id' => $validated['classe_id'],
+    ]);
+
+    // Créer le Student lié à ce user
+    $student = Student::create([
+        'first_name' => $validated['first_name'],
+        'last_name' => $validated['last_name'],
+        'email' => $validated['email'], // <-- AJOUTE CETTE LIGNE
+        'birth_date' => $validated['birth_date'],
+        'class_id' => $validated['classe_id'],
+        'tutor_id' => $validated['tutor_id'] ?? null,
+    ]);
+
+    return response()->json([
+        'message' => 'Étudiant créé avec succès',
+        'student' => $student->load('class', 'tutor'),
+    ], 201);
+}
+
+
+
     // GET /api/students/{id}
     public function show($id)
     {
