@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('content');
-            $table->string('type'); // e.g., pdf, video
+            $table->string('type'); 
             $table->foreignId('class_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });

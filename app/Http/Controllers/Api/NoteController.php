@@ -5,10 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Models\Note;
 use App\Models\Student;
 use App\Models\Subject;
-use Barryvdh\DomPDF\PDF;
 use Illuminate\Http\Request;
-use PhpOffice\PhpWord\PhpWord;
-use PhpOffice\PhpWord\IOFactory;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 
@@ -191,63 +189,8 @@ class NoteController extends Controller
         ]);
     }
 
-    //pour imprime le pdf et word
 
     
-    public function exportBulletin($studentId, $trimestre, $format = 'pdf')
-    {
-        $student = Student::with('classe')->findOrFail($studentId);
 
-        $notes = Note::with('subject')
-            ->where('student_id', $studentId)
-            ->where('term', $trimestre)
-            ->get()
-            ->groupBy('subject.name');
-
-        // Exemple de moyenne par matière
-        $formatted = [];
-        foreach ($notes as $subject => $noteList) {
-            $moyenne = round($noteList->avg('value'), 2);
-            $formatted[] = [
-                'matiere' => $subject,
-                'notes' => $noteList->pluck('value')->toArray(),
-                'moyenne' => $moyenne
-            ];
-        }
-
-        if ($format === 'pdf') {
-            $pdf = PDF::loadView('bulletin.pdf', [
-                'student' => $student,
-                'trimestre' => $trimestre,
-                'notes' => $formatted
-            ]);
-
-            return $pdf->download("bulletin_{$student->id}_{$trimestre}.pdf");
-        }
-
-        if ($format === 'word') {
-            $phpWord = new PhpWord();
-            $section = $phpWord->addSection();
-
-            $section->addText("Bulletin scolaire - $trimestre");
-            $section->addText("Élève : {$student->first_name} {$student->last_name}");
-            $section->addText("Classe : {$student->classe->nom}");
-
-            foreach ($formatted as $item) {
-                $section->addText("Matière : {$item['matiere']}");
-                $section->addText("Notes : " . implode(', ', $item['notes']));
-                $section->addText("Moyenne : {$item['moyenne']}");
-                $section->addText('');
-            }
-
-            $fileName = "bulletin_{$student->id}_{$trimestre}.docx";
-            $tempPath = storage_path("app/public/$fileName");
-            IOFactory::createWriter($phpWord, 'Word2007')->save($tempPath);
-
-            return response()->download($tempPath)->deleteFileAfterSend(true);
-        }
-
-        return response()->json(['error' => 'Format invalide'], 400);
-    }
 
 }

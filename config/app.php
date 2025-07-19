@@ -1,6 +1,7 @@
 <?php
 
 return [
+
     /*
     |--------------------------------------------------------------------------
     | Application Name
@@ -122,22 +123,4 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Autoloaded Service Providers
-    |--------------------------------------------------------------------------
-    */
-    'providers' => [
-        Illuminate\Filesystem\FilesystemServiceProvider::class,
-        Barryvdh\DomPDF\ServiceProvider::class,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Class Aliases
-    |--------------------------------------------------------------------------
-    */
-    'aliases' => [
-        'PDF' => Barryvdh\DomPDF\Facade::class,
-    ],
 ];
