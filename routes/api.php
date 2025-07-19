@@ -1,4 +1,5 @@
 <?php
+use App\Events\PaymentMade;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\NoteController;
@@ -11,6 +12,15 @@ use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TeacherController;
 use App\Http\Controllers\Api\ScheduleController;
 
+
+Route::post('/test-paiement', function (\Illuminate\Http\Request $request) {
+    $payment = $request->input('payment');
+    $parentId = $request->input('parent_id');
+
+    event(new PaymentMade($payment, $parentId));
+
+    return response()->json(['status' => 'Paiement broadcasté avec succès']);
+});
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -28,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('classes', ClasseController::class);
     Route::apiResource('subjects', SubjectController::class);
     Route::apiResource('payments', PaymentController::class);
+    Route::apiResource('schedules', ScheduleController::class);
     Route::get('/classes/{id}/students', [ClasseController::class, 'students']);
 
 
@@ -57,8 +68,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payments/{id}/confirm', [PaymentController::class, 'confirm']);
 
     // Schedules
-    Route::get('/schedules/{class_id}', [ScheduleController::class, 'index']);
-    Route::post('/schedules', [ScheduleController::class, 'store']);
+    Route::get('schedules/teacher/{id}', [ScheduleController::class, 'getByTeacher']);
+    Route::get('schedules/student/{id}', [ScheduleController::class, 'getByStudent']);
+    Route::get('schedules/class/{class_id}', [ScheduleController::class, 'byClass']);
+
 
     // Messages
     Route::get('/messages', [MessageController::class, 'index']);

@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Events\PaymentMade;
 
 class PaymentController extends Controller
 {
@@ -32,6 +33,7 @@ class PaymentController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
+        event(new PaymentMade($payment));
         $payment = Payment::create(array_merge($request->all(), ['status' => 'pending']));
         return response()->json($payment, 201);
     }
