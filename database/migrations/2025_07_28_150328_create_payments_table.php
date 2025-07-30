@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('status')->default('pending')->comment('pending, completed, failed');
             $table->string('transaction_id')->nullable();
             $table->date('payment_date');
+            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('invoice_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

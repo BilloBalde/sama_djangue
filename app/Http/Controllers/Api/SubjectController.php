@@ -1,17 +1,25 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Subject;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class SubjectController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('role:admin')->except(['index', 'show']);
+    }
+
     public function index()
     {
-        return response()->json(Subject::with('classe')->get(), 200);
+        $subjects = Subject::with('class', 'notes', 'schedules')->get();
+        if ($subjects->isEmpty()) {
+            return response()->json(['message' => 'Aucune matière trouvée'], 404);
+        }
+        return response()->json($subjects, 200);
     }
 
     public function store(Request $request)
@@ -19,23 +27,24 @@ class SubjectController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'class_id' => 'required|exists:classes,id',
+            'coefficient' => 'nullable|numeric|min:0|max:10',
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
         $subject = Subject::create($request->all());
-        return response()->json($subject, 201);
+        return response()->json($subject->load('class'), 201);
     }
 
     public function show($id)
     {
-        $subject = Subject::with('classe')->find($id);
+        $subject = Subject::with('class', 'notes', 'schedules')->find($id);
         if (!$subject) {
             return response()->json(['message' => 'Matière non trouvée'], 404);
         }
-        return response()->json($subject);
+        return response()->json($subject, 200);
     }
 
     public function update(Request $request, $id)
@@ -48,14 +57,15 @@ class SubjectController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|max:255',
             'class_id' => 'sometimes|required|exists:classes,id',
+            'coefficient' => 'sometimes|numeric|min:0|max:10',
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
         $subject->update($request->all());
-        return response()->json($subject);
+        return response()->json($subject->load('class'), 200);
     }
 
     public function destroy($id)
@@ -66,7 +76,6 @@ class SubjectController extends Controller
         }
 
         $subject->delete();
-        return response()->json(['message' => 'Matière supprimée avec succès']);
+        return response()->json(['message' => 'Matière supprimée avec succès'], 200);
     }
 }
-

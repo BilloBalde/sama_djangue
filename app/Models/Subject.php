@@ -10,9 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Subject extends Model
 {
-        protected $fillable = ['name', 'class_id'];
+        protected $fillable = ['name', 'class_id', 'coefficient'];
 
-    public function class()
+    public function classe()
     {
         return $this->belongsTo(ClassModel::class);
     }

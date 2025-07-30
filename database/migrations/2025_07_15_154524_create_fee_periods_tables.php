@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('notes', function (Blueprint $table) {
+        Schema::create('fee_periods', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained()->onDelete('cascade');
-            $table->foreignId('subject_id')->constrained()->onDelete('cascade');
-            $table->decimal('value', 5, 2);
-            $table->date('date');
+            $table->string('name'); // ex. "Trimestre 1 2025"
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->date('due_date');
+            $table->foreignId('school_year_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('notes');
+        Schema::dropIfExists('fee_periods_tables');
     }
 };
