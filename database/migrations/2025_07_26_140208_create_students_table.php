@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('first_name');
             $table->string('last_name');
-            $table->string('email')->unique();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->enum('gender', ['male', 'female', 'other'])->nullable();
             $table->date('birth_date');
-            $table->foreignId('class_id')->constrained()->onDelete('cascade');
+            $table->foreignId('class_id')->constrained('classes')->onDelete('cascade'); // Ajouté
             $table->foreignId('tutor_id')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
         });

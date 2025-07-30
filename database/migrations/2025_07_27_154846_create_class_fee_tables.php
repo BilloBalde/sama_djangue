@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-
-
-        Schema::create('submissions', function (Blueprint $table) {
+            Schema::create('class_fees', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained()->onDelete('cascade');
-            $table->foreignId('assignment_id')->constrained()->onDelete('cascade');
-            $table->text('content')->nullable();
-            $table->dateTime('submitted_at')->nullable();
+            $table->foreignId('class_id')->constrained()->onDelete('cascade');
+            $table->foreignId('fee_period_id')->constrained()->onDelete('cascade');
+            $table->decimal('amount', 10, 2);
             $table->timestamps();
         });
     }
@@ -28,7 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('submissions');
-        
+        Schema::dropIfExists('class_fee_tables');
     }
 };

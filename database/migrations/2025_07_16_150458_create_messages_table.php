@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('receiver_id')->constrained('users')->onDelete('cascade');
             $table->text('content');
-            $table->string('type')->comment('absence, note, payment, general');
+            $table->enum('type', ['absence', 'note', 'payment', 'general'])->default('general');
             $table->boolean('is_read')->default(false);
             $table->timestamps();
         });

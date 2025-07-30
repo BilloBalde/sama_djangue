@@ -123,4 +123,9 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'school_name' => env('SCHOOL_NAME', 'École SAMA DJANGUE'),
+    'school_address' => env('SCHOOL_ADDRESS', 'Dakar, Sénégal'),
+    'school_phone' => env('SCHOOL_PHONE', '+221 77 123 45 67'),
+    'school_email' => env('SCHOOL_EMAIL', 'contact@samadjangue.sn'),
+
 ];

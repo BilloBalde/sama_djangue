@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Models\Note;
 use App\Models\User;
 use App\Models\Grade;
+use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\Attendance;
 use App\Models\ClassModel;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +16,7 @@ class Student extends Model
 {
      use HasRoles;
 
-    protected $fillable = ['first_name', 'last_name', 'email', 'birth_date', 'class_id', 'tutor_id'];
+    protected $fillable = ['user_id', 'first_name', 'last_name', 'email', 'birth_date', 'class_id', 'tutor_id'];
 
     protected $guard_name = 'sanctum'; 
     
@@ -49,8 +51,18 @@ class Student extends Model
     }
 
     public function classe()
-{
-    return $this->belongsTo(ClassModel::class);
-}
+    {
+        return $this->belongsTo(ClassModel::class);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
 
 }

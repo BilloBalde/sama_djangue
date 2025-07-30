@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('classes', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('year');
+            $table->foreignId('school_year_id')->constrained('school_years')->onDelete('cascade');
+            $table->foreignId('professeur_id')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
         });
     }

@@ -5,11 +5,13 @@ namespace App\Models;
 use App\Models\User;
 use App\Models\Subject;
 use App\Models\ClassModel;
+use App\Models\SchoolYear;
 use Illuminate\Database\Eloquent\Model;
 
 class Schedule extends Model
 {
-     protected $fillable = ['class_id', 'subject_id', 'teacher_id', 'day_of_week', 'start_time', 'end_time'];
+     protected $fillable = ['class_id', 'subject_id', 'teacher_id', 'day_of_week', 
+     'start_time', 'end_time', 'school_year_id'];
 
     public function class()
     {
@@ -24,5 +26,9 @@ class Schedule extends Model
     public function teacher()
     {
         return $this->belongsTo(User::class, 'teacher_id');
+    }
+    public function schoolYear()
+    {
+        return $this->belongsTo(SchoolYear::class);
     }
 }

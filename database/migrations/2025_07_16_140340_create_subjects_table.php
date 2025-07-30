@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->foreignId('class_id')->constrained()->onDelete('cascade');
+            $table->decimal('coefficient', 3, 1)->default(1.0)->unsigned();
             $table->timestamps();
         });
     }

@@ -1,27 +1,36 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Student;
-use App\Models\Resource;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class StudentController extends Controller
 {
-    public function index()
+    public function __construct()
     {
-        return response()->json(Student::with('class', 'tutor')->get(), 200);
+        $this->middleware('role:admin');
     }
 
-    /*public function store(Request $request)
+    public function index()
+    {
+        $students = Student::with('class', 'tutor', 'notes', 'payments', 'attendances')->get();
+        if ($students->isEmpty()) {
+            return response()->json(['message' => 'Aucun étudiant trouvé'], 404);
+        }
+        return response()->json($students, 200);
+    }
+
+    public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:students,email',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
             'birth_date' => 'required|date',
             'class_id' => 'required|exists:classes,id',
             'tutor_id' => 'nullable|exists:users,id',
@@ -31,53 +40,34 @@ class StudentController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        $student = Student::create($request->all());
-        $student->assignRole('student');
-        return response()->json($student, 201);
-    }*/
+        // Créer le User
+        $user = User::create([
+            'name' => $request->first_name . ' ' . $request->last_name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'class_id' => $request->class_id,
+        ]);
+        $user->assignRole('student');
 
- public function store(Request $request)
-{
-    $validated = $request->validate([
-        'first_name' => 'required|string|max:255',
-        'last_name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users',
-        'password' => 'required|string|min:6',
-        'birth_date' => 'required|date',
-        'classe_id' => 'required|exists:classes,id',
-        'tutor_id' => 'nullable|exists:users,id',
-    ]);
+        // Créer le Student lié à ce user
+        $student = Student::create([
+            'user_id' => $user->id,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'birth_date' => $request->birth_date,
+            'class_id' => $request->class_id,
+            'tutor_id' => $request->tutor_id ?? null,
+        ]);
 
-    // Créer le User
-    $user = User::create([
-        'name' => $validated['first_name'].' '.$validated['last_name'],
-        'email' => $validated['email'],
-        'password' => bcrypt($validated['password']),
-        'classe_id' => $validated['classe_id'],
-    ]);
+        return response()->json([
+            'message' => 'Étudiant créé avec succès',
+            'student' => $student->load('class', 'tutor', 'notes', 'payments', 'attendances'),
+        ], 201);
+    }
 
-    // Créer le Student lié à ce user
-    $student = Student::create([
-        'first_name' => $validated['first_name'],
-        'last_name' => $validated['last_name'],
-        'email' => $validated['email'], // <-- AJOUTE CETTE LIGNE
-        'birth_date' => $validated['birth_date'],
-        'class_id' => $validated['classe_id'],
-        'tutor_id' => $validated['tutor_id'] ?? null,
-    ]);
-
-    return response()->json([
-        'message' => 'Étudiant créé avec succès',
-        'student' => $student->load('class', 'tutor'),
-    ], 201);
-}
-
-
-
-    // GET /api/students/{id}
     public function show($id)
     {
-        $student = Student::with('class', 'tutor')->find($id);
+        $student = Student::with('class', 'tutor', 'notes', 'payments', 'attendances')->find($id);
 
         if (!$student) {
             return response()->json(['message' => 'Étudiant non trouvé'], 404);
@@ -86,7 +76,6 @@ class StudentController extends Controller
         return response()->json($student, 200);
     }
 
-    // PUT /api/students/{id}
     public function update(Request $request, $id)
     {
         $student = Student::find($id);
@@ -98,7 +87,6 @@ class StudentController extends Controller
         $validator = Validator::make($request->all(), [
             'first_name' => 'sometimes|required|string|max:255',
             'last_name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|unique:students,email,' . $id,
             'birth_date' => 'sometimes|required|date',
             'class_id' => 'sometimes|required|exists:classes,id',
             'tutor_id' => 'nullable|exists:users,id',
@@ -110,10 +98,15 @@ class StudentController extends Controller
 
         $student->update($request->all());
 
-        return response()->json($student->load('class', 'tutor'), 200);
+        // Mettre à jour l'utilisateur associé si nécessaire
+        if ($request->hasAny(['first_name', 'last_name'])) {
+            $user = $student->user;
+            $user->update(['name' => $request->first_name . ' ' . $request->last_name]);
+        }
+
+        return response()->json($student->load('class', 'tutor', 'notes', 'payments', 'attendances'), 200);
     }
 
-    // DELETE /api/students/{id}
     public function destroy($id)
     {
         $student = Student::find($id);
@@ -122,11 +115,10 @@ class StudentController extends Controller
             return response()->json(['message' => 'Étudiant non trouvé'], 404);
         }
 
+        // Supprimer l'utilisateur associé
+        $student->user->delete();
         $student->delete();
 
         return response()->json(['message' => 'Étudiant supprimé avec succès'], 200);
     }
-
-
-
 }
